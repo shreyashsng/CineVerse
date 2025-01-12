@@ -59,7 +59,7 @@ export default function Navbar() {
     }
 
     fetchProfile()
-  }, [supabase])
+  }, [supabase, refreshTrigger])
 
   const handleSignOut = async () => {
     try {

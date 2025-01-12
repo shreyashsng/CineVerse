@@ -13,6 +13,12 @@ interface AuthModalProps {
 
 type AuthMode = 'signin' | 'signup' | 'forgotPassword'
 
+// Add custom error type
+type AuthError = {
+  message: string;
+  status?: number;
+}
+
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const router = useRouter()
   const [mode, setMode] = useState<AuthMode>('signin')
@@ -99,8 +105,9 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) throw error
         setMessage('Check your email for the password reset link')
       }
-    } catch (error: any) {
-      setError(error?.message || 'An error occurred')
+    } catch (error: unknown) {
+      const authError = error as AuthError
+      setError(authError?.message || 'An error occurred')
     } finally {
       setLoading(false)
     }
@@ -243,7 +250,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         Forgot your password?
                       </button>
                       <div>
-                        Don't have an account?{' '}
+                        Don&apos;t have an account?{' '}
                         <button
                           type="button"
                           onClick={() => setMode('signup')}

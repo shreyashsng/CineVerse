@@ -20,6 +20,12 @@ interface VideoPlayerProps {
   onClose: () => void
 }
 
+// Add custom error type
+type PlayerError = {
+  message: string;
+  code?: string;
+}
+
 export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: VideoPlayerProps) {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [selectedSeason, setSelectedSeason] = useState(1)
@@ -40,8 +46,9 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
         if (data.totalSeasons) {
           setTotalSeasons(parseInt(data.totalSeasons))
         }
-      } catch (error) {
-        console.error('Error fetching series info:', error)
+      } catch (error: unknown) {
+        const playerError = error as PlayerError
+        console.error('Error:', playerError.message)
       }
     }
 
@@ -75,8 +82,9 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
             return updated
           })
         }
-      } catch (error) {
-        console.error('Error fetching episodes:', error)
+      } catch (error: unknown) {
+        const playerError = error as PlayerError
+        console.error('Error:', playerError.message)
       } finally {
         setIsLoading(false)
       }
