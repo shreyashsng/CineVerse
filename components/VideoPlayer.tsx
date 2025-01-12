@@ -20,6 +20,11 @@ interface VideoPlayerProps {
   onClose: () => void
 }
 
+interface OmdbEpisode {
+  Title: string;
+  Episode: string;
+}
+
 // Add custom error type
 type PlayerError = {
   message: string;
@@ -68,7 +73,7 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
         const data = await response.json()
         
         if (data.Episodes) {
-          const episodesList = data.Episodes.map((ep: any) => ({
+          const episodesList = data.Episodes.map((ep: OmdbEpisode) => ({
             title: ep.Title,
             episode: parseInt(ep.Episode),
           }))
