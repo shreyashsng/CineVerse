@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useDebounce } from '@/hooks/useDebounce'
 import { IoChevronForwardOutline, IoChevronBackOutline, IoCloseOutline } from 'react-icons/io5'
 import VideoPlayer from './VideoPlayer'

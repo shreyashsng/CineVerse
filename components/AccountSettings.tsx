@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoChevronBackOutline, IoCloseOutline } from 'react-icons/io5'
 import Image from 'next/image'
@@ -31,14 +31,7 @@ export default function AccountSettings({ isOpen, onClose, onProfileUpdate }: Ac
     confirmPassword: ''
   })
 
-  // Fetch user profile when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchUserProfile()
-    }
-  }, [isOpen])
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession()
     
     if (session?.user) {
@@ -53,7 +46,14 @@ export default function AccountSettings({ isOpen, onClose, onProfileUpdate }: Ac
         setDisplayName(profile.display_name)
       }
     }
-  }
+  }, [supabase])
+
+  // Fetch user profile when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchUserProfile()
+    }
+  }, [isOpen, fetchUserProfile])
 
   const handleSave = async () => {
     if (displayName.trim() !== '') {
