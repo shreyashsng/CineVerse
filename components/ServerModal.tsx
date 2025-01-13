@@ -40,7 +40,7 @@ export default function ServerModal({ show, server, onClose, onSave }: ServerMod
   const validateAndFormatUrl = (url: string, type: 'movie' | 'tv'): string => {
     try {
       // Remove any existing placeholders first
-      let cleanUrl = url
+      const cleanUrl = url
         .replace('{imdbId}', 'placeholder')
         .replace('{season}', '1')
         .replace('{episode}', '1')
@@ -69,8 +69,8 @@ export default function ServerModal({ show, server, onClose, onSave }: ServerMod
       }
 
       return url
-    } catch (error: any) {
-      throw new Error(`Invalid ${type} URL format: ${error.message}`)
+    } catch (error) {
+      throw new Error(`Invalid ${type} URL format: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import { IoLockClosedOutline, IoMailOutline } from 'react-icons/io5'
-import Image from 'next/image'
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('')

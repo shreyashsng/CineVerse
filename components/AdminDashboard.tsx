@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
-import { IoAddOutline, IoGridOutline, IoListOutline } from 'react-icons/io5'
+import { IoAddOutline } from 'react-icons/io5'
 import ServerModal from './ServerModal'
 import ServerCard from './ServerCard'
 
@@ -20,7 +20,6 @@ export default function AdminDashboard() {
   const [additionalServers, setAdditionalServers] = useState<StreamServer[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingServer, setEditingServer] = useState<StreamServer | null>(null)
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const supabase = createClientComponentClient()
 
   // Default servers (read-only)
@@ -86,10 +85,9 @@ export default function AdminDashboard() {
       
       await fetchAdditionalServers()
       setShowModal(false)
-    } catch (error: any) {
-      console.error('Error saving server:', error.message)
-      // You might want to show this error to the user
-      alert(error.message)
+    } catch (error) {
+      console.error('Error saving server:', error instanceof Error ? error.message : 'Unknown error')
+      alert(error instanceof Error ? error.message : 'Unknown error')
     }
   }
 
