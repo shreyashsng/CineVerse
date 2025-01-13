@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoCloseOutline } from 'react-icons/io5'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Episode {
   title: string
@@ -26,12 +27,97 @@ type PlayerError = {
   code?: string;
 }
 
+interface StreamSource {
+  name: string
+  url: string
+  isDefault?: boolean
+  color?: string
+}
+
 export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: VideoPlayerProps) {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [selectedEpisode, setSelectedEpisode] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [totalSeasons, setTotalSeasons] = useState(1)
+  const [selectedSource, setSelectedSource] = useState(0)
+  const [additionalSources, setAdditionalSources] = useState<StreamSource[]>([])
+  const supabase = createClientComponentClient()
+
+  // Define default sources
+  const defaultSources = [
+    {
+      name: 'Mercury',
+      url: contentType === 'movie' 
+        ? `https://vidsrc.xyz/embed/movie/${imdbId}`
+        : `https://vidsrc.xyz/embed/tv/${imdbId}/${selectedSeason}/${selectedEpisode}`,
+      isDefault: true,
+      color: 'blue'
+    },
+    {
+      name: 'Venus',
+      url: contentType === 'movie'
+        ? `https://www.2embed.cc/embed/${imdbId}`
+        : `https://www.2embed.cc/embedtv/${imdbId}&s=${selectedSeason}&e=${selectedEpisode}`,
+      isDefault: true,
+      color: 'purple'
+    }
+  ]
+
+  // Fetch additional sources from Supabase
+  useEffect(() => {
+    const fetchAdditionalSources = async () => {
+      try {
+        const { data: servers, error } = await supabase
+          .from('streaming_servers')
+          .select('*')
+          .order('created_at', { ascending: true })
+
+        if (error) throw error
+
+        if (servers) {
+          const formattedSources = servers.map(server => ({
+            name: server.name,
+            url: contentType === 'movie'
+              ? server.movie_url.replace('{imdbId}', imdbId)
+              : server.tv_url
+                  .replace('{imdbId}', imdbId)
+                  .replace('{season}', selectedSeason.toString())
+                  .replace('{episode}', selectedEpisode.toString()),
+            isDefault: false
+          }))
+          setAdditionalSources(formattedSources)
+        }
+      } catch (error) {
+        console.error('Error fetching servers:', error)
+      }
+    }
+
+    fetchAdditionalSources()
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'streaming_servers',
+        },
+        () => {
+          console.log('VideoPlayer: Change received!')
+          fetchAdditionalSources() // Refetch when any change occurs
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [imdbId, contentType, selectedSeason, selectedEpisode, supabase])
+
+  // Combine default and additional sources
+  const allSources = [...defaultSources, ...additionalSources]
 
   // First fetch total seasons when a TV show is loaded
   useEffect(() => {
@@ -95,10 +181,6 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
     }
   }, [imdbId, contentType, selectedSeason])
 
-  const videoUrl = contentType === 'movie'
-    ? `https://vidsrc.xyz/embed/movie/${imdbId}`
-    : `https://vidsrc.xyz/embed/tv/${imdbId}/${selectedSeason}/${selectedEpisode}`
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -108,17 +190,40 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-8"
         >
-          {/* Content Container */}
           <div className="w-full h-full flex gap-6 max-w-[1400px] mx-auto">
-            {/* Video Player */}
             <div className="flex-1 h-full flex items-center flex-col">
               <div className="w-full max-w-[900px] mx-auto aspect-video">
                 <iframe
-                  src={videoUrl}
+                  src={allSources[selectedSource].url}
                   className="w-full h-full rounded-xl"
                   allowFullScreen
                 />
               </div>
+              
+              {/* Source Selector */}
+              <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
+                {allSources.map((source, index) => (
+                  <button
+                    key={source.name}
+                    onClick={() => setSelectedSource(index)}
+                    className={`px-4 py-2 rounded-full text-sm transition-colors flex items-center gap-2 ${
+                      selectedSource === index
+                        ? source.isDefault 
+                          ? `bg-${source.color}-600 text-white`
+                          : 'bg-purple-600 text-white'
+                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      source.isDefault 
+                        ? `bg-${source.color}-400`
+                        : 'bg-purple-400'
+                    }`} />
+                    {source.name}
+                  </button>
+                ))}
+              </div>
+
               {/* Server Note */}
               <div className="flex items-center gap-2 mt-4 text-gray-400 text-sm">
                 <motion.div
@@ -133,7 +238,7 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
                     ease: "easeInOut",
                   }}
                 />
-                <span>To switch servers, click the cloud icon in the top-left corner of the player</span>
+                <span>To switch servers, click the server name below the player</span>
               </div>
             </div>
 
