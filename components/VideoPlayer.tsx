@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoCloseOutline } from 'react-icons/io5'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 interface Episode {
   title: string
@@ -31,12 +32,28 @@ type PlayerError = {
   code?: string;
 }
 
+// Add this interface
+interface StreamSource {
+  name: string;
+  url: string;
+}
+
+// Add this interface to get the additional servers
+interface AdditionalServer {
+  name: string;
+  movie_url: string;
+  tv_url: string;
+}
+
 export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: VideoPlayerProps) {
   const [seasons, setSeasons] = useState<Season[]>([])
   const [selectedSeason, setSelectedSeason] = useState(1)
   const [selectedEpisode, setSelectedEpisode] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [totalSeasons, setTotalSeasons] = useState(1)
+  const [selectedSource, setSelectedSource] = useState(0);
+  const [additionalServers, setAdditionalServers] = useState<AdditionalServer[]>([])
+  const supabase = createClientComponentClient()
 
   // First fetch total seasons when a TV show is loaded
   useEffect(() => {
@@ -100,9 +117,53 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
     }
   }, [imdbId, contentType, selectedSeason])
 
-  const videoUrl = contentType === 'movie'
-    ? `https://vidsrc.xyz/embed/movie/${imdbId}`
-    : `https://vidsrc.xyz/embed/tv/${imdbId}/${selectedSeason}/${selectedEpisode}`
+  // Add this effect to fetch servers
+  useEffect(() => {
+    const fetchServers = async () => {
+      const { data } = await supabase
+        .from('streaming_servers')
+        .select('*')
+        .order('created_at', { ascending: true })
+      
+      if (data) {
+        setAdditionalServers(data)
+      }
+    }
+
+    fetchServers()
+  }, [supabase])
+
+  // Generate stream sources based on default + additional servers
+  const streamSources: StreamSource[] = [
+    {
+      name: 'Mercury',
+      url: contentType === 'movie' 
+        ? `https://vidsrc.xyz/embed/movie/${imdbId}`
+        : `https://vidsrc.xyz/embed/tv/${imdbId}/${selectedSeason}/${selectedEpisode}`
+    },
+    {
+      name: 'Venus',
+      url: contentType === 'movie'
+        ? `https://www.2embed.cc/embed/${imdbId}`
+        : `https://www.2embed.cc/embedtv/${imdbId}&s=${selectedSeason}&e=${selectedEpisode}`
+    },
+    {
+      name: 'Mars',
+      url: contentType === 'movie'
+        ? `https://embed.su/embed/movie/${imdbId}`
+        : `https://embed.su/embed/tv/${imdbId}/${selectedSeason}/${selectedEpisode}`
+    },
+    // Additional servers from database
+    ...additionalServers.map(server => ({
+      name: server.name,
+      url: contentType === 'movie'
+        ? server.movie_url.replace('{imdbId}', imdbId)
+        : server.tv_url
+            .replace('{imdbId}', imdbId)
+            .replace('{season}', selectedSeason.toString())
+            .replace('{episode}', selectedEpisode.toString())
+    }))
+  ];
 
   return (
     <AnimatePresence>
@@ -119,10 +180,26 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
             <div className="flex-1 h-full flex items-center flex-col">
               <div className="w-full max-w-[900px] mx-auto aspect-video">
                 <iframe
-                  src={videoUrl}
+                  src={streamSources[selectedSource].url}
                   className="w-full h-full rounded-xl"
                   allowFullScreen
                 />
+              </div>
+              {/* Source Selector */}
+              <div className="flex items-center gap-2 mt-4">
+                {streamSources.map((source, index) => (
+                  <button
+                    key={source.name}
+                    onClick={() => setSelectedSource(index)}
+                    className={`px-4 py-2 rounded-full text-sm transition-colors ${
+                      selectedSource === index
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                    }`}
+                  >
+                    {source.name}
+                  </button>
+                ))}
               </div>
               {/* Server Note */}
               <div className="flex items-center gap-2 mt-4 text-gray-400 text-sm">
