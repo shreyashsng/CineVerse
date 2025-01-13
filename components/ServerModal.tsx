@@ -2,11 +2,21 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { IoCloseOutline } from 'react-icons/io5'
 
+interface ServerData {
+  name: string
+  movie_url: string
+  tv_url: string
+  description: string
+  id?: string
+  isDefault?: boolean
+  color?: string
+}
+
 interface ServerModalProps {
   show: boolean
-  server: any
+  server: ServerData | null
   onClose: () => void
-  onSave: (data: any) => void
+  onSave: (data: ServerData) => void
 }
 
 export default function ServerModal({ show, server, onClose, onSave }: ServerModalProps) {

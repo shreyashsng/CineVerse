@@ -3,33 +3,27 @@ import { useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 
-export default function AdminSignup() {
+export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const { error: signUpError, data } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        }
+          emailRedirectTo: `${location.origin}/auth/callback`,
+        },
       })
-      
       if (signUpError) throw signUpError
-
-      setMessage('Signup successful! You can now go to /admin/login')
-      setTimeout(() => {
-        router.push('/admin/login')
-      }, 2000)
-    } catch (error) {
-      setError('Error during signup')
+      router.push('/admin')
+    } catch (err) {
+      // Handle error appropriately
+      console.error('Signup error:', err)
     }
   }
 
@@ -38,19 +32,7 @@ export default function AdminSignup() {
       <div className="w-full max-w-md bg-white/5 rounded-2xl p-8 backdrop-blur-xl">
         <h1 className="text-2xl font-bold text-white mb-6">Admin Signup</h1>
         
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 mb-6 text-red-400">
-            {error}
-          </div>
-        )}
-
-        {message && (
-          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 mb-6 text-green-400">
-            {message}
-          </div>
-        )}
-
-        <form onSubmit={handleSignup} className="space-y-4">
+        <form onSubmit={handleSignUp} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
               Email

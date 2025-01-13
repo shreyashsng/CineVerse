@@ -1,6 +1,5 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { IoAddOutline, IoGridOutline, IoListOutline, IoSearchOutline, IoPencilOutline, IoTrashOutline } from 'react-icons/io5'
 import ServerModal from './ServerModal'
@@ -12,13 +11,14 @@ interface AdditionalServer {
   movie_url: string
   tv_url: string
   description: string
+  isDefault?: boolean
+  color?: string
 }
 
 export default function AdminDashboard() {
   const [servers, setServers] = useState<AdditionalServer[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingServer, setEditingServer] = useState<AdditionalServer | null>(null)
-  const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = useState('')
   const supabase = createClientComponentClient()
@@ -53,6 +53,7 @@ export default function AdminDashboard() {
     server.tv_url.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchServers()
   }, [])
@@ -66,8 +67,6 @@ export default function AdminDashboard() {
       setServers(data || [])
     } catch (error) {
       console.error('Error:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
