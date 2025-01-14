@@ -7,6 +7,7 @@ import { IoSettingsOutline, IoLogOutOutline } from 'react-icons/io5'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import AccountSettings from './AccountSettings'
+import ChangelogModal from './ChangelogModal'
 
 export default function Navbar() {
   const router = useRouter()
@@ -20,6 +21,7 @@ export default function Navbar() {
     email: string
   } | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,22 +89,21 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            <div className="w-24"></div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link 
-                href="/" 
-                className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent"
-              >
+            <div className="flex items-center">
+              <Link href="/" className="text-xl font-bold text-white">
                 CineVerse
               </Link>
-            </motion.div>
+            </div>
 
-            <div className="w-24 flex justify-end" ref={dropdownRef}>
-              <div className="relative">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsChangelogOpen(true)}
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+              >
+                Changelog
+              </button>
+
+              <div className="relative" ref={dropdownRef}>
                 <motion.div 
                   className="flex items-center gap-3 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 transition-all duration-300 cursor-pointer"
                   whileHover={{ scale: 1.02 }}
@@ -184,6 +185,11 @@ export default function Navbar() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         onProfileUpdate={() => setRefreshTrigger(prev => prev + 1)}
+      />
+
+      <ChangelogModal 
+        isOpen={isChangelogOpen}
+        onClose={() => setIsChangelogOpen(false)}
       />
     </>
   )

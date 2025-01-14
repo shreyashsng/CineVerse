@@ -188,20 +188,36 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-8"
+          className="fixed inset-0 z-50 flex flex-col bg-black/90 backdrop-blur-xl overflow-y-auto"
         >
-          <div className="w-full h-full flex gap-6 max-w-[1400px] mx-auto">
-            <div className="flex-1 h-full flex items-center flex-col">
-              <div className="w-full max-w-[900px] mx-auto aspect-video">
-                <iframe
-                  src={allSources[selectedSource].url}
-                  className="w-full h-full rounded-xl"
-                  allowFullScreen
-                />
+          {/* Close Button - Always at top */}
+          <button
+            onClick={onClose}
+            className="fixed top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors text-white z-50"
+          >
+            <IoCloseOutline size={32} />
+          </button>
+
+          {/* Main Content */}
+          <div className="w-full min-h-full flex flex-col md:flex-row gap-6 max-w-[1400px] mx-auto p-4 md:p-8 pt-16 md:pt-8">
+            {/* Video Player Section */}
+            <div className="flex-1 flex flex-col items-center">
+              {/* Video Player with Glow */}
+              <div className="relative w-full max-w-[900px]">
+                <div className="absolute -inset-2 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 rounded-xl blur-2xl" />
+                <div className="absolute inset-0 bg-black/50 rounded-xl backdrop-blur-sm" />
+                
+                <div className="relative aspect-video">
+                  <iframe
+                    src={allSources[selectedSource].url}
+                    className="w-full h-full rounded-xl"
+                    allowFullScreen
+                  />
+                </div>
               </div>
               
-              {/* Source Selector */}
-              <div className="flex items-center gap-2 mt-4 flex-wrap justify-center">
+              {/* Source Buttons */}
+              <div className="flex items-center gap-2 mt-4 flex-wrap justify-center w-full max-w-[900px]">
                 {allSources.map((source, index) => (
                   <button
                     key={source.name}
@@ -224,8 +240,8 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
                 ))}
               </div>
 
-              {/* Server Note */}
-              <div className="flex items-center gap-2 mt-4 text-gray-400 text-sm">
+              {/* Server Switch Note - Centered with player */}
+              <div className="flex items-center gap-2 mt-4 text-gray-400 text-sm w-full max-w-[900px] justify-center">
                 <motion.div
                   className="w-2 h-2 rounded-full bg-blue-500"
                   animate={{
@@ -238,16 +254,16 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
                     ease: "easeInOut",
                   }}
                 />
-                <span>To switch servers, click the server name below the player</span>
+                <span>To switch servers, click the server name above</span>
               </div>
             </div>
 
-            {/* Episodes Panel for TV Shows */}
+            {/* TV Show Controls */}
             {contentType === 'series' && (
               <motion.div
-                initial={{ x: 100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                className="w-80 bg-black/50 rounded-xl backdrop-blur-md border border-white/10 overflow-hidden flex flex-col"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="w-full md:w-80 bg-black/50 rounded-xl backdrop-blur-md border border-white/10 overflow-hidden flex flex-col h-auto md:h-[calc(100vh-4rem)]"
               >
                 {/* Season Selector */}
                 <div className="p-4 border-b border-white/10">
@@ -317,14 +333,6 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
               </motion.div>
             )}
           </div>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-full transition-colors text-white z-50"
-          >
-            <IoCloseOutline size={32} />
-          </button>
         </motion.div>
       )}
     </AnimatePresence>

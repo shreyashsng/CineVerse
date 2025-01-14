@@ -139,7 +139,7 @@ export default function Home() {
                 <p className="text-gray-400">
                   {feature.description}
                 </p>
-              </div>
+        </div>
             ))}
           </motion.div>
 
