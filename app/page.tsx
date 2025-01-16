@@ -81,92 +81,20 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white relative overflow-hidden">
-      <GlowingBackground />
-      
-      {/* Content Container */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-          className="text-center max-w-4xl mx-auto"
-        >
-          {/* Logo */}
-          <motion.div
-            variants={fadeInUp}
-            className="mb-8"
-          >
-            <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 bg-clip-text text-transparent pb-2">
-              CineVerse
-            </h1>
-          </motion.div>
+    <main className="flex min-h-screen flex-col items-center justify-center relative">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/50 to-black pointer-events-none" />
 
-          {/* Tagline */}
-          <motion.h2
-            variants={fadeInUp}
-            className="text-xl md:text-2xl text-gray-300 mb-8"
-          >
-            Your gateway to endless entertainment. Movies and TV shows, all in one place.
-          </motion.h2>
-
-          {/* Features */}
-          <motion.div
-            variants={fadeInUp}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-          >
-            {[
-              {
-                title: "Vast Library",
-                description: "Access thousands of movies and TV shows instantly"
-              },
-              {
-                title: "HD Streaming",
-                description: "Enjoy high-quality video with smooth playback"
-              },
-              {
-                title: "Cross Platform",
-                description: "Watch on any device, anywhere, anytime"
-              }
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="p-6 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-colors"
-              >
-                <h3 className="text-lg font-semibold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-400">
-                  {feature.description}
-                </p>
-        </div>
-            ))}
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            variants={fadeInUp}
-            className="relative inline-block group"
-          >
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-md opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
-            <button
-              onClick={handleStartStreaming}
-              className="relative px-8 py-4 bg-black rounded-full text-white font-medium hover:bg-black/80 transition-colors"
-            >
-              Start Streaming
-            </button>
-          </motion.div>
-        </motion.div>
-
-        {/* Decorative Elements */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      {/* Content container with adjusted padding */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4 pt-20 md:pt-24">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent mb-4">
+          CineVerse
+        </h1>
+        <p className="text-lg md:text-xl text-gray-300 max-w-2xl mb-8">
+          Your gateway to endless entertainment. Stream your favorite movies and TV shows in one place.
+        </p>
+        {/* ... rest of the content ... */}
       </div>
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
     </main>
   )
 }

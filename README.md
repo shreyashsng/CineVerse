@@ -39,7 +39,7 @@ Create a `.env.local` file with:
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     NEXT_PUBLIC_OMDB_API_KEY=your_omdb_api_key
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser for route.
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Environment Setup
 
