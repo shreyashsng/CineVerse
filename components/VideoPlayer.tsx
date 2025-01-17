@@ -263,7 +263,7 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-full md:w-80 bg-black/50 rounded-xl backdrop-blur-md border border-white/10 overflow-hidden flex flex-col h-auto md:h-[calc(100vh-4rem)]"
+                className="w-full md:w-80 bg-black/50 rounded-xl backdrop-blur-md border border-white/10 overflow-hidden flex flex-col h-[400px] md:h-[calc(100vh-4rem)]"
               >
                 {/* Season Selector */}
                 <div className="p-4 border-b border-white/10">
@@ -297,7 +297,7 @@ export default function VideoPlayer({ imdbId, contentType, isOpen, onClose }: Vi
                 </div>
 
                 {/* Episodes List */}
-                <div className="flex-1 overflow-y-auto scrollbar-hide p-4">
+                <div className="flex-1 overflow-y-auto scrollbar-hide p-4 max-h-[calc(400px-5rem)] md:max-h-none">
                   <h3 className="text-lg font-semibold mb-3 text-white">Episodes</h3>
                   {isLoading ? (
                     <div className="flex items-center justify-center h-40">

@@ -85,6 +85,9 @@ export default function DashboardClient() {
   const searchRef = useRef<HTMLDivElement>(null)
   const debouncedSearch = useDebounce(searchQuery, 500)
 
+  // Add new state for initial load
+  const [hasLoadedTrending, setHasLoadedTrending] = useState(false)
+
   // Handle click outside search results
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -97,11 +100,12 @@ export default function DashboardClient() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Fetch trending content
+  // Modify the trending fetch to only load once
   useEffect(() => {
     const fetchTrending = async () => {
+      if (hasLoadedTrending) return // Skip if already loaded
+
       try {
-        // Extended list of popular movie and show IDs
         const movieIds = [
           'tt0111161', 'tt0068646', 'tt0468569', 'tt0071562', 'tt0050083',
           'tt0108052', 'tt0167260', 'tt0110912', 'tt0060196', 'tt0120737',
@@ -124,18 +128,21 @@ export default function DashboardClient() {
           )
         }
 
-        const movies = await fetchDetails(movieIds)
-        const shows = await fetchDetails(showIds)
+        const [movies, shows] = await Promise.all([
+          fetchDetails(movieIds),
+          fetchDetails(showIds)
+        ])
 
         setTrendingMovies(movies)
         setTrendingShows(shows)
+        setHasLoadedTrending(true)
       } catch (error) {
         console.error('Error fetching trending content:', error)
       }
     }
 
     fetchTrending()
-  }, [])
+  }, [hasLoadedTrending]) // Only depend on hasLoadedTrending
 
   // Updated search functionality
   useEffect(() => {
@@ -508,22 +515,12 @@ export default function DashboardClient() {
           </AnimatePresence>
         </motion.div>
 
-        <AnimatePresence mode="wait">
-          {!searchResults.length && (
-            <motion.div
-              variants={fadeInUp}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={{ duration: 0.6, delay: 0.4 }}
-            >
-              <ContentRow 
-                title={contentType === 'movie' ? "Trending Movies" : "Trending TV Shows"} 
-                items={contentType === 'movie' ? trendingMovies : trendingShows} 
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div className={`transition-opacity duration-300 ${showSearchResults ? 'opacity-30 pointer-events-none' : ''}`}>
+          <ContentRow 
+            title={contentType === 'movie' ? "Trending Movies" : "Trending TV Shows"} 
+            items={contentType === 'movie' ? trendingMovies : trendingShows} 
+          />
+        </div>
       </div>
 
       <VideoPlayer
