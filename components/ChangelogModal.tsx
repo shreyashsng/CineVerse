@@ -86,7 +86,7 @@ export default function ChangelogModal({ isOpen, onClose }: ChangelogModalProps)
                 onClick={onClose}
                 className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
               >
-                <IoCloseOutline size={20} />
+                <IoCloseOutline size={20} className='text-white' />
               </button>
             </div>
 

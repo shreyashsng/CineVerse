@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { IoSettingsOutline, IoLogOutOutline } from 'react-icons/io5'
+import { IoSettingsOutline, IoLogOutOutline, IoHeartOutline } from 'react-icons/io5'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useRouter } from 'next/navigation'
 import AccountSettings from './AccountSettings'
@@ -22,6 +22,7 @@ export default function Navbar() {
   } | null>(null)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const [isChangelogOpen, setIsChangelogOpen] = useState(false)
+  const [wishlistCount, setWishlistCount] = useState(0)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -63,6 +64,31 @@ export default function Navbar() {
     fetchProfile()
   }, [supabase, refreshTrigger])
 
+  useEffect(() => {
+    const fetchWishlistCount = async () => {
+      const { count } = await supabase
+        .from('wishlists')
+        .select('*', { count: 'exact', head: true })
+      
+      setWishlistCount(count || 0)
+    }
+
+    fetchWishlistCount()
+
+    const channel = supabase
+      .channel('wishlist_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'wishlists' },
+        () => fetchWishlistCount()
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [supabase])
+
   const handleSignOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -98,10 +124,22 @@ export default function Navbar() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setIsChangelogOpen(true)}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
               >
                 Changelog
               </button>
+
+              <Link 
+                href="/wishlist" 
+                className="relative p-2 hover:bg-white/5 rounded-full transition-colors"
+              >
+                <IoHeartOutline size={24} className="text-gray-400 hover:text-white" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center text-xs bg-red-500 text-white rounded-full">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
 
               <div className="relative" ref={dropdownRef}>
                 <motion.div 
@@ -130,7 +168,7 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-72 rounded-xl bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden"
+                      className="absolute right-0 mt-2 w-72 rounded-xl bg-black/90 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-[3000]"
                     >
                       {/* User Info Section */}
                       <div className="p-4 border-b border-white/10">
