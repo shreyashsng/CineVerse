@@ -124,7 +124,7 @@ export default function Navbar() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setIsChangelogOpen(true)}
-                className="px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+                className="hidden md:block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
               >
                 Changelog
               </button>

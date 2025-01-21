@@ -150,6 +150,19 @@ const TrailerHero = ({ onPlay, contentType }: {
   const [isMuted, setIsMuted] = useState(true)
   const [isPlayerOpen, setIsPlayerOpen] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  // Add mobile detection
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768) // 768px is standard mobile breakpoint
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Move getTrendingContent inside useEffect to avoid dependency issues
   useEffect(() => {
@@ -270,7 +283,19 @@ const TrailerHero = ({ onPlay, contentType }: {
   return (
     <div className="relative w-full min-h-[85vh] mb-12">
       <div className="absolute inset-0 overflow-hidden bg-black/40 z-[1]">
-        {trailerData?.Trailer ? (
+        {/* Show poster for mobile, trailer for desktop */}
+        {isMobile ? (
+          <div className="relative w-full h-full">
+            <Image
+              src={trailerData.Poster}
+              alt={trailerData.Title}
+              fill
+              className="object-cover opacity-60"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+          </div>
+        ) : (
           <motion.div 
             className="relative w-full h-full"
             animate={{ 
@@ -291,25 +316,33 @@ const TrailerHero = ({ onPlay, contentType }: {
               }}
             />
           </motion.div>
-        ) : null}
+        )}
         
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-l from-transparent via-black/40 to-black" />
       </div>
 
-      <div className="relative h-full max-w-7xl mx-auto px-8">
-        <div className="absolute top-80 left-8 max-w-lg z-[2]">
+      {/* Content overlay - adjust positioning for mobile */}
+      <div className="relative h-full max-w-7xl mx-auto px-4 md:px-8">
+        <div 
+          className={`absolute z-[2] max-w-lg
+            ${isMobile 
+              ? 'left-4 right-4 top-[20rem]' // Center vertically on mobile
+              : 'top-80 left-8'                           // Desktop positioning
+            }
+          `}
+        >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="space-y-6"
+            className="space-y-4 md:space-y-6"
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-white drop-shadow-[0_4px_3px_rgba(0,0,0,0.4)]">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white drop-shadow-[0_4px_3px_rgba(0,0,0,0.4)]">
               {trailerData.Title}
             </h1>
 
-            <div className="flex items-center gap-3 text-xs">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
               <span className="px-2.5 py-1 bg-black/40 backdrop-blur-sm rounded-md text-white font-medium">
                 {trailerData.Trailer?.rating || 'PG-13'}
               </span>
@@ -321,47 +354,50 @@ const TrailerHero = ({ onPlay, contentType }: {
               </span>
             </div>
             
-            <p className="text-base text-white/90 max-w-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.4)]">
+            <p className="text-sm sm:text-base text-white/90 max-w-xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.4)]">
               {`${trailerData.Plot.split('.')[0]}.`}
             </p>
 
             {trailerData.Trailer?.genres && (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 {trailerData.Trailer.genres.map((genre, index) => (
                   <span 
                     key={index}
                     className="text-white/90 text-xs font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.4)]"
                   >
-                    {index > 0 && <span className="mr-3 text-white/60">|</span>}
+                    {index > 0 && <span className="mr-2 sm:mr-3 text-white/60">|</span>}
                     {genre}
                   </span>
                 ))}
               </div>
             )}
 
-            <div className="flex items-center gap-3 pt-3">
+            {/* Only show volume control on desktop */}
+            <div className="flex items-center gap-3 pt-2 sm:pt-3">
               <motion.button
                 onClick={() => onPlay(trailerData?.imdbID || '')}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors font-medium text-base shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
+                className="flex items-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-black rounded-lg hover:bg-gray-100 transition-colors font-medium text-sm sm:text-base shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                <IoPlayCircle size={24} />
+                <IoPlayCircle size={20} className="sm:w-6 sm:h-6" />
                 Watch Now
               </motion.button>
 
-              <motion.button
-                onClick={toggleVolume}
-                className="flex items-center justify-center w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-colors shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {isMuted ? (
-                  <IoVolumeMuteOutline size={20} className="text-white" />
-                ) : (
-                  <IoVolumeMediumOutline size={20} className="text-white" />
-                )}
-              </motion.button>
+              {!isMobile && (
+                <motion.button
+                  onClick={toggleVolume}
+                  className="flex items-center justify-center w-10 h-10 bg-black/40 hover:bg-black/60 backdrop-blur-sm rounded-full transition-colors shadow-[0_4px_6px_rgba(0,0,0,0.2)]"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {isMuted ? (
+                    <IoVolumeMuteOutline size={20} className="text-white" />
+                  ) : (
+                    <IoVolumeMediumOutline size={20} className="text-white" />
+                  )}
+                </motion.button>
+              )}
             </div>
           </motion.div>
         </div>
