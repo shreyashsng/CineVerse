@@ -2,7 +2,8 @@
 
 CineVerse is a sleek, modern streaming platform built with Next.js 13, offering a seamless entertainment experience with movies and TV shows.
 
-![CineVerse Screenshot]
+![image](https://github.com/user-attachments/assets/7653cc0c-c0f5-4804-ba9f-a9fd8823d4be)
+
 
 ## Features
 
